@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart, QrCode, Utensils, AlertTriangle, CheckCircle, Clock, Plus, Trash2, TrendingUp, DollarSign } from 'lucide-react';
+import { BarChart, QrCode, Utensils, AlertTriangle, CheckCircle, Clock, Plus, Trash2, TrendingUp, DollarSign, User, LogOut, Edit2, Save, X } from 'lucide-react';
 import { useCanteen } from '../context/CanteenContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
     const {
@@ -11,10 +12,21 @@ const AdminDashboard = () => {
         addPollItem,
         analytics
     } = useCanteen();
+    const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState('orders'); // orders, menu, analytics
     const [showScanner, setShowScanner] = useState(false);
     const [scannerResult, setScannerResult] = useState("");
+    const [showProfile, setShowProfile] = useState(false);
+
+    // -- Admin Profile State --
+    const [adminProfile, setAdminProfile] = useState({
+        name: "Canteen Manager",
+        staffId: "STF-001",
+        email: "admin@uni.edu"
+    });
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editForm, setEditForm] = useState(adminProfile);
 
     // New Menu Item Form State
     const [newItemHtml, setNewItemHtml] = useState(false);
@@ -50,26 +62,40 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleSaveProfile = () => {
+        setAdminProfile(editForm);
+        setIsEditingProfile(false);
+    };
+
+    const handleLogout = () => {
+        navigate('/');
+    };
+
     return (
-        <div className="space-y-6 pt-6 pb-20">
+        <div className="space-y-6 pt-6 pb-20 relative">
             <header className="flex justify-between items-center px-2">
                 <div>
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-secondary to-white bg-clip-text text-transparent">Admin Panel</h1>
                     <p className="text-gray-400 text-sm">Canteen Management</p>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${!isBookingPaused ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                    <span className={`h-2 w-2 rounded-full ${!isBookingPaused ? 'bg-green-500' : 'bg-red-500'}`} />
-                    {!isBookingPaused ? 'Booking Active' : 'Booking Paused'}
+                <div className="flex gap-3 items-center">
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${!isBookingPaused ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        <span className={`h-2 w-2 rounded-full ${!isBookingPaused ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className="hidden sm:inline">{!isBookingPaused ? 'Booking Active' : 'Booking Paused'}</span>
+                    </div>
+                    <button onClick={() => setShowProfile(true)} className="h-10 w-10 glass-card flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                        <User size={20} />
+                    </button>
                 </div>
             </header>
 
             {/* Tab Navigation */}
-            <div className="flex gap-4 border-b border-white/10">
+            <div className="flex gap-4 border-b border-white/10 overflow-x-auto no-scrollbar">
                 {['orders', 'menu', 'analytics'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`pb-2 capitalize ${activeTab === tab ? 'text-secondary border-b-2 border-secondary' : 'text-gray-500'}`}
+                        className={`pb-2 capitalize whitespace-nowrap ${activeTab === tab ? 'text-secondary border-b-2 border-secondary' : 'text-gray-500'}`}
                     >
                         {tab}
                     </button>
@@ -257,6 +283,82 @@ const AdminDashboard = () => {
                             <button onClick={() => setShowScanner(false)} className="px-6 py-2 bg-white/10 rounded-lg text-white">Cancel</button>
                         </div>
                     </div>
+                )}
+            </AnimatePresence>
+
+            {/* Admin Profile Modal */}
+            <AnimatePresence>
+                {showProfile && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowProfile(false)}
+                            className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+                            className="fixed top-0 bottom-0 right-0 z-50 bg-[#121212] w-3/4 max-w-sm border-l border-white/10 p-6 flex flex-col"
+                        >
+                            <h2 className="text-2xl font-bold text-white mb-6">Staff Account</h2>
+
+                            <div className="bg-white/5 p-4 rounded-xl mb-6 relative group">
+                                <div className="h-16 w-16 bg-gradient-to-tr from-secondary to-orange-500 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg shadow-secondary/20">
+                                    {adminProfile.name.charAt(0)}
+                                </div>
+
+                                {isEditingProfile ? (
+                                    <div className="space-y-3 mt-2">
+                                        <div>
+                                            <label className="text-[10px] text-gray-400 uppercase tracking-wider">Name</label>
+                                            <input
+                                                value={editForm.name}
+                                                onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                                className="w-full bg-black/20 border border-white/10 rounded px-2 py-1 text-white text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] text-gray-400 uppercase tracking-wider">Staff ID</label>
+                                            <input
+                                                value={editForm.staffId}
+                                                onChange={e => setEditForm({ ...editForm, staffId: e.target.value })}
+                                                className="w-full bg-black/20 border border-white/10 rounded px-2 py-1 text-white text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2 pt-2">
+                                            <button onClick={handleSaveProfile} className="flex-1 bg-green-500/20 text-green-400 py-1 rounded text-xs font-bold flex items-center justify-center gap-1">
+                                                <Save size={12} /> Save
+                                            </button>
+                                            <button onClick={() => { setIsEditingProfile(false); setEditForm(adminProfile) }} className="flex-1 bg-white/10 text-white py-1 rounded text-xs">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => { setIsEditingProfile(true); setEditForm(adminProfile) }}
+                                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <h3 className="font-bold text-white text-lg">{adminProfile.name}</h3>
+                                        <p className="text-gray-400 text-sm">{adminProfile.staffId}</p>
+                                        <p className="text-gray-500 text-xs mt-1">{adminProfile.email}</p>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="mt-auto space-y-3">
+                                <button onClick={handleLogout} className="w-full p-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-500 flex items-center justify-center gap-2 transition-colors">
+                                    <LogOut size={18} />
+                                    Logout
+                                </button>
+                                <button onClick={() => setShowProfile(false)} className="w-full p-3 bg-white/10 rounded-xl text-white hover:bg-white/20 transition-colors">
+                                    Close Menu
+                                </button>
+                            </div>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
 
