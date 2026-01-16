@@ -39,7 +39,7 @@ const Login = () => {
 
                 <div className="mb-8 relative z-10">
                     <h1 className={`text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2 transition-colors duration-500 ${isAdminMode ? 'from-secondary to-orange-400' : 'from-primary to-secondary'}`}>
-                        {isAdminMode ? 'Staff Portal' : 'UniCanteen'}
+                        {isAdminMode ? 'Staff Portal' : 'PrePlate'}
                     </h1>
                     <p className="text-gray-400">{isAdminMode ? 'Management Access' : 'Smart Ordering System'}</p>
                 </div>
